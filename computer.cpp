@@ -81,16 +81,9 @@ void step(struct Computer *state) {
 int simulate(struct Computer *state) {
     state->simulating = true;
 
-    for(int i = 0; i < 10; ++i) {
-        cout << "Address: " << i << "  Data: " << static_cast<unsigned>(state->MEMORY[i]) << endl;
-    }
-
     while(!state->halted) {
         step(state);
     }
-
-    cout << static_cast<unsigned>(state->PC) << endl;
-    cout << static_cast<unsigned>(state->A) << endl;
 
     return 0;
 }
@@ -102,7 +95,7 @@ void print_hex(unsigned char value) {
 int main() {
     struct Computer state;
 
-    unsigned char data[7] = {0x52, 0x27, 0x31, 0xF0, 0, 0, 0};
+    unsigned char data[7] = {0x57, 0x21, 0x36, 0xF0, 0, 0, 0};
 
     while (true) {
         cout << "> ";
@@ -138,7 +131,7 @@ int main() {
                 state.PC = static_cast<unsigned>(stoi(args[2], 0 ,16));
             }
         } else if (args[0] == "PEEK") { 
-           print_hex(peek(&state, (short)stoi(args[1])));
+           print_hex(peek(&state, static_cast<unsigned>(stoi(args[1], 0 ,16))));
         } else if (args[0] == "POKE") { 
             poke(&state, (short)stoi(args[1]), static_cast<unsigned>(stoi(args[2], 0, 16)));
         } else if (args[0] == "DUMP") {
@@ -149,20 +142,22 @@ int main() {
             print_hex(state.B);
             cout << "PC - ";
             print_hex(state.PC);
+        } else if (args[0] == "MEMDUMP") {
+            for(int i = 0; i < stoi(args[2]); ++i) {
+                cout << "Address: ";
+                print_hex(static_cast<unsigned>(stoi(args[1], 0, 16) + i));
+                cout << "Data: ";
+                print_hex(peek(&state, static_cast<unsigned>(stoi(args[1], 0, 16) + i)));
+                cout << endl;
+            }
         } else if (args[0] == "STEP") {
             step(&state);
         } else if (args[0] == "LOAD") {
             mem_copy(&state, (short)stoi(args[1]), data, 7);
+        } else if (args[0] == "RUN") {
+            simulate(&state);
         }
     }
-
-    mem_copy(&state, 0, data, 7);
-    // mem_set(&state, 0, 0x00, 6);
-    // poke(&state, 0, 0x49);
-    // poke(&state, 1, 0x59);
-    // poke(&state, 2, 0x6B);
-
-    simulate(&state);
     
     return 0;
 }
